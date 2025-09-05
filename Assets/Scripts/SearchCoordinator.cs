@@ -30,6 +30,10 @@ public class SearchCoordinator : MonoBehaviour
     public float altitudeStep = 3f;
     public float spawnRing = 6f;     // spawn drones around ROI at this radius
 
+    [Header("UI Root")]
+    public GameObject uiRoot;        // assign in Inspector
+    public bool fadeOutUI = true;
+    public float uiFadeDuration = 0.5f;
     LineRenderer ringLR;
     Vector3 roiCenter;
 
@@ -88,6 +92,8 @@ public class SearchCoordinator : MonoBehaviour
 
         // Clean previous spawns if any
         CleanupSpawns();
+
+        HideUI();
 
         // Spawn people (at ground)
         for (int i = 0; i < numPeople; i++) SpawnOnePerson(i);
@@ -174,6 +180,47 @@ public class SearchCoordinator : MonoBehaviour
             float cz = center.z + radius * Mathf.Sin(a);
             ringLR.SetPosition(i, new Vector3(cx, y, cz));
         }
+    }
+
+    void HideUI()
+{
+    if (!uiRoot) return;
+
+    // If we can fade, do it; otherwise just deactivate
+    if (fadeOutUI && uiRoot.TryGetComponent<CanvasGroup>(out var cg))
+        StartCoroutine(FadeOutCanvasGroup(cg, uiFadeDuration, deactivate:true));
+    else
+        uiRoot.SetActive(false);
+}
+
+public void ShowUI() // optional, if you ever need to bring it back
+{
+    if (!uiRoot) return;
+    uiRoot.SetActive(true);
+    if (uiRoot.TryGetComponent<CanvasGroup>(out var cg))
+    {
+        cg.alpha = 1f;
+        cg.interactable = true;
+        cg.blocksRaycasts = true;
+    }
+}
+
+    System.Collections.IEnumerator FadeOutCanvasGroup(CanvasGroup cg, float dur, bool deactivate)
+    {
+        // Non-blocking fade that doesn’t pause the sim (uses unscaled time)
+        float a0 = cg.alpha;
+        cg.interactable = false;
+        cg.blocksRaycasts = false;
+
+        float t = 0f;
+        while (t < dur)
+        {
+            t += Time.unscaledDeltaTime;
+            cg.alpha = Mathf.Lerp(a0, 0f, Mathf.Clamp01(t / dur));
+            yield return null;
+        }
+        cg.alpha = 0f;
+        if (deactivate) cg.gameObject.SetActive(false);
     }
 
     // === DEMO landing trigger ===
