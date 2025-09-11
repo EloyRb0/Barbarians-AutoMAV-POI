@@ -148,6 +148,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5eca427e791e13f41be3558ff2e7f152, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SearchCoordinator
+  ollamaUrl: http://127.0.0.1:11434/api/chat
+  ollamaModel: llama3.2:3b-instruct
+  acceptConfidence: 0.75
+  personPrefabs:
+  - {fileID: 331701394632645555, guid: 0d71fddb45c0a5043bc3ccdef158889e, type: 3}
+  - {fileID: 3564980986461123847, guid: 1c75ce760406cce4fab3eba0269614fe, type: 3}
+  - {fileID: 4933752190516030533, guid: be47c5622c036534aa5ec741983793f7, type: 3}
+  - {fileID: 1547145141531297268, guid: 2c6e68873f0574a419b2c69a2ce1cd73, type: 3}
+  - {fileID: 1672688717547873401, guid: 2353540aa4b794d10b9194db22c3e095, type: 3}
+  - {fileID: 9014071811466978267, guid: 6e70685671bb845f98df901674944ee1, type: 3}
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 0
+  defaultMissionText: person with an orange jacket and a yellow construction helmet
   xInput: {fileID: 1122347346}
   yInput: {fileID: 791872015}
   zInput: {fileID: 1774798169}
@@ -160,7 +174,7 @@ MonoBehaviour:
   personPrefab: {fileID: 4429444745185741844, guid: 615857207a9c5344388e7bdc22590a4a, type: 3}
   numPeople: 3
   baseAltitude: 24
-  altitudeStep: 3
+  altitudeStep: 3.05
   spawnRing: 6
   uiRoot: {fileID: 181292262}
   fadeOutUI: 1
@@ -415,7 +429,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -644, y: -377}
+  m_AnchoredPosition: {x: -453, y: 15}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &346740120
@@ -465,8 +479,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 80
+  m_fontSizeBase: 80
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -554,7 +568,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -129, y: -262}
+  m_AnchoredPosition: {x: 28, y: 130}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &791872015
@@ -1134,7 +1148,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -685, y: -262}
+  m_AnchoredPosition: {x: -528, y: 130}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1122347346
@@ -1571,7 +1585,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 411, y: -377}
+  m_AnchoredPosition: {x: 602, y: 15}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1641832087
@@ -1621,8 +1635,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 80
+  m_fontSizeBase: 80
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -1788,7 +1802,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -196, y: -126}
+  m_AnchoredPosition: {x: -39, y: 266}
   m_SizeDelta: {x: 250, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1761284236
@@ -2024,7 +2038,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TopDownCamera
   coordinator: {fileID: 19061965}
-  height: 50
+  height: 40
   followLerp: 2
   minSize: 25
   maxSize: 80
@@ -2065,7 +2079,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 388, y: -262}
+  m_AnchoredPosition: {x: 545, y: 130}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1774798169
@@ -2208,7 +2222,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -103, y: -377}
+  m_AnchoredPosition: {x: 88, y: 15}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1970399341
@@ -2258,8 +2272,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 80
+  m_fontSizeBase: 80
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -2344,7 +2358,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -255, y: 20}
+  m_AnchoredPosition: {x: -98, y: 412}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2070565244
