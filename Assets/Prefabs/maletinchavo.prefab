@@ -119,5 +119,7 @@ MonoBehaviour:
   - suitcase
   - carrying
   - standing
-  - unarmed
+  - glasses
+  - brown hair
+  - short hair
   triggerRadius: 5

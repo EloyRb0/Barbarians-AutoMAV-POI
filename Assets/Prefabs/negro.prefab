@@ -1,0 +1,120 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &1853787181944731813
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 0a01ff43b0688914a96dc12e9c64f163, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 945.6891
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0a01ff43b0688914a96dc12e9c64f163, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0a01ff43b0688914a96dc12e9c64f163, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -485.9735
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0a01ff43b0688914a96dc12e9c64f163, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0a01ff43b0688914a96dc12e9c64f163, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0a01ff43b0688914a96dc12e9c64f163, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0a01ff43b0688914a96dc12e9c64f163, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0a01ff43b0688914a96dc12e9c64f163, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0a01ff43b0688914a96dc12e9c64f163, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0a01ff43b0688914a96dc12e9c64f163, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0a01ff43b0688914a96dc12e9c64f163, type: 3}
+      propertyPath: m_Name
+      value: negro
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects:
+    - {fileID: -8700617353114198275, guid: 0a01ff43b0688914a96dc12e9c64f163, type: 3}
+    - {fileID: -5117700066308340382, guid: 0a01ff43b0688914a96dc12e9c64f163, type: 3}
+    - {fileID: 65702495048144492, guid: 0a01ff43b0688914a96dc12e9c64f163, type: 3}
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 0a01ff43b0688914a96dc12e9c64f163, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5897783053292908734}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 0a01ff43b0688914a96dc12e9c64f163, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2067243885605790839}
+  m_SourcePrefab: {fileID: 100100000, guid: 0a01ff43b0688914a96dc12e9c64f163, type: 3}
+--- !u!1 &1547145141531297268 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 0a01ff43b0688914a96dc12e9c64f163, type: 3}
+  m_PrefabInstance: {fileID: 1853787181944731813}
+  m_PrefabAsset: {fileID: 0}
+--- !u!135 &5897783053292908734
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1547145141531297268}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 5
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &2067243885605790839
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1547145141531297268}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 22736babd0a9b974e8fce87b61023720, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PersonDescriptor
+  description: 'Person dressed in an all-black suit (black top and black pants),
+    also he has a yellow umbrella in his hand . '
+  tags:
+  - man
+  - black outfit
+  - black suit
+  - black bowtie
+  - yellow umbrella
+  - fromal clothing
+  - dark skin color
+  - black hair
+  - 'short hair '
+  - white shirt
+  triggerRadius: 5
