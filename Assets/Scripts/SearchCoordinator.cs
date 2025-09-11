@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
+using System.Globalization;
+
 
 
 public class SearchCoordinator : MonoBehaviour
@@ -11,6 +13,14 @@ public class SearchCoordinator : MonoBehaviour
     public string ollamaUrl = "http://127.0.0.1:11434/api/chat";
     public string ollamaModel = "llama3.2:3b-instruct";
     [Range(0f,1f)] public float acceptConfidence = 0.70f;
+    
+    [Header("People Prefabs — one of each will spawn inside ROI")]
+    public GameObject[] personPrefabs = new GameObject[6];   // assign the SIX different prefabs here
+
+    [Header("Grounding")]
+    public LayerMask groundMask; // set this in Inspector to your Ground/Terrain layer(s)
+
+
 
     [Header("Mission text (no CV)")]
     [TextArea(2,6)] public string defaultMissionText = "person with an orange jacket and a yellow construction helmet";
@@ -89,14 +99,23 @@ public class SearchCoordinator : MonoBehaviour
             startButton.onClick.RemoveListener(OnStartClicked);
     }
 
-    void Update()
+void Update()
+{
+    // DEMO: press L to trigger a landing onto the nearest person
+#if ENABLE_INPUT_SYSTEM
+    if (UnityEngine.InputSystem.Keyboard.current != null &&
+        UnityEngine.InputSystem.Keyboard.current.lKey.wasPressedThisFrame)
     {
-        // DEMO: press L to trigger a landing onto the nearest person
-        if (Keyboard.current.lKey.wasPressedThisFrame)
-        {
-            TryLandingDemo();
-        }
+        TryLandingDemo();
     }
+#else
+    if (Input.GetKeyDown(KeyCode.L))
+    {
+        TryLandingDemo();
+    }
+#endif
+}
+
 
     readonly System.Collections.Generic.HashSet<int> _evaluatingPeople = new();
 string _currentMissionText = "";
@@ -118,7 +137,8 @@ System.Collections.IEnumerator EvaluateAndMaybeLand(DroneAgent drone, PersonDesc
         ollamaUrl, ollamaModel,
         _currentMissionText, person.description,
         v => { verdict=v; done=true; },
-        e => { err=e; done=true; }
+        e => { err=e; done=true; },
+        true // <-- verbose logging ON
     );
 
     _evaluatingPeople.Remove(person.GetInstanceID());
@@ -159,7 +179,7 @@ System.Collections.IEnumerator EvaluateAndMaybeLand(DroneAgent drone, PersonDesc
         HideUI();
 
         // Spawn people (at ground)
-        for (int i = 0; i < numPeople; i++) SpawnOnePerson(i);
+        SpawnAllPeopleOnce();
 
         // Spawn drones on a ring around ROI
         for (int i = 0; i < numDrones; i++) SpawnOneDrone(i);
@@ -219,15 +239,38 @@ System.Collections.IEnumerator EvaluateAndMaybeLand(DroneAgent drone, PersonDesc
         people.Add(go.transform);
     }
 
-    bool TryParseInputs(out Vector3 center)
+
+bool TryParseInputs(out Vector3 center)
+{
+    center = Vector3.zero;
+
+    if (xInput == null || yInput == null || zInput == null)
     {
-        center = Vector3.zero;
-        if (!float.TryParse(xInput?.text, out float x)) return false;
-        if (!float.TryParse(yInput?.text, out float y)) return false;
-        if (!float.TryParse(zInput?.text, out float z)) return false;
-        center = new Vector3(x, y, z);
-        return true;
+        Debug.LogError("SearchCoordinator: assign xInput, yInput, zInput in the Inspector.");
+        return false;
     }
+
+    // Normalize: trim and accept comma or dot decimals
+    string xs = NormalizeNum(xInput.text);
+    string ys = NormalizeNum(yInput.text);
+    string zs = NormalizeNum(zInput.text);
+
+    bool okX = float.TryParse(xs, NumberStyles.Float, CultureInfo.InvariantCulture, out float x);
+    bool okY = float.TryParse(ys, NumberStyles.Float, CultureInfo.InvariantCulture, out float y);
+    bool okZ = float.TryParse(zs, NumberStyles.Float, CultureInfo.InvariantCulture, out float z);
+
+    if (!(okX && okY && okZ))
+    {
+        Debug.LogWarning($"Invalid coordinates. Please enter numeric X/Y/Z. Got X='{xInput.text}', Y='{yInput.text}', Z='{zInput.text}'");
+        return false;
+    }
+
+    center = new Vector3(x, y, z);
+    return true;
+
+    static string NormalizeNum(string s)
+        => string.IsNullOrWhiteSpace(s) ? "" : s.Trim().Replace(',', '.');
+}
 
     void UpdateRing(Vector3 center, float radius)
     {
@@ -319,4 +362,96 @@ public void ShowUI() // optional, if you ever need to bring it back
             yield return null;
         landingInProgress = false;
     }
+
+    void SpawnAllPeopleOnce()
+{
+    // Clean previous spawns
+    foreach (var p in people) if (p != null) Destroy(p.gameObject);
+    people.Clear();
+
+    if (personPrefabs == null || personPrefabs.Length == 0)
+    {
+        Debug.LogError("personPrefabs is empty. Assign the six prefabs in the Inspector.");
+        return;
+    }
+
+    // Instantiate ONCE per unique prefab
+    var used = new HashSet<GameObject>();
+    int spawned = 0;
+
+    foreach (var prefab in personPrefabs)
+    {
+        if (prefab == null) { Debug.LogWarning("Null entry in personPrefabs; skipping."); continue; }
+        if (!used.Add(prefab)) { Debug.LogWarning($"Duplicate prefab reference '{prefab.name}' skipped."); continue; }
+
+        Vector3 pos = RandomPointInCircleOnGround(roiCenter, roiRadiusMeters - 2f);
+        var go = Instantiate(prefab, pos, Quaternion.identity);
+        go.name = prefab.name;
+
+        go.transform.rotation = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f); // optional random facing
+        PlaceOnGround(go.transform); // <-- ensure feet on ground regardless of pivot
+
+
+        // Safety net: ensure PersonDescriptor + Trigger
+        var pd = go.GetComponent<PersonDescriptor>() ?? go.AddComponent<PersonDescriptor>();
+        if (pd.triggerRadius < 1f) pd.triggerRadius = 5f;
+        var sc = go.GetComponent<SphereCollider>() ?? go.AddComponent<SphereCollider>();
+        sc.isTrigger = true;
+        sc.radius = pd.triggerRadius;
+
+        people.Add(go.transform);
+        spawned++;
+    }
+
+    Debug.Log($"SpawnAllPeopleOnce(): spawned {spawned} unique people.");
+}
+
+
+Vector3 RandomPointInCircleOnGround(Vector3 center, float radius)
+{
+    // Uniform point in disc
+    float t = 2f * Mathf.PI * Random.value;
+    float u = Random.value + Random.value;
+    float r = (u > 1f ? 2f - u : u) * Mathf.Max(0.1f, radius);
+
+    Vector3 probe = new Vector3(center.x + r * Mathf.Cos(t), center.y + 50f, center.z + r * Mathf.Sin(t));
+
+    // Raycast to GROUND ONLY (ignore triggers)
+    if (Physics.Raycast(probe, Vector3.down, out var hit, 300f, groundMask, QueryTriggerInteraction.Ignore))
+        return hit.point;
+
+    // Fallback if mask not set: try without mask
+    if (Physics.Raycast(probe, Vector3.down, out hit, 300f, ~0, QueryTriggerInteraction.Ignore))
+        return hit.point;
+
+    return new Vector3(probe.x, center.y, probe.z);
+}
+
+/// <summary>Moves a spawned object so its renderer-bounds bottom sits exactly on the ground under it.</summary>
+void PlaceOnGround(Transform t)
+{
+    // Compute combined bounds (MeshRenderer + SkinnedMeshRenderer)
+    var rends = t.GetComponentsInChildren<Renderer>();
+    if (rends == null || rends.Length == 0) return;
+
+    Bounds b = rends[0].bounds;
+    for (int i = 1; i < rends.Length; i++) b.Encapsulate(rends[i].bounds);
+
+    // Raycast straight down from above the model to GROUND ONLY
+    Vector3 rayStart = new Vector3(b.center.x, b.max.y + 5f, b.center.z);
+
+    if (!Physics.Raycast(rayStart, Vector3.down, out var hit, 500f, groundMask, QueryTriggerInteraction.Ignore))
+    {
+        // Fallback without mask
+        if (!Physics.Raycast(rayStart, Vector3.down, out hit, 500f, ~0, QueryTriggerInteraction.Ignore))
+            return;
+    }
+
+    float deltaY = hit.point.y - b.min.y;  // how much to move so bottom touches ground
+    t.position += new Vector3(0f, deltaY, 0f);
+}
+
+
+
+
 }

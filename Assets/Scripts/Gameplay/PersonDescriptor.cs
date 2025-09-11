@@ -10,7 +10,7 @@ public class PersonDescriptor : MonoBehaviour
     public string[] tags = System.Array.Empty<string>();
 
     [Header("Trigger")]
-    public float triggerRadius = 5f;
+    public float triggerRadius = 100f;
 
     void Reset()
     {
