@@ -40,6 +40,16 @@ public class SearchCoordinator : MonoBehaviour
     readonly List<DroneAgent> drones = new();
     readonly List<Transform> people = new();
 
+    public List<Vector3> GetDronePositions()
+    {
+    List<Vector3> positions = new();
+    foreach (var d in drones)
+    {
+        if (d != null) positions.Add(d.transform.position);
+    }
+    return positions;
+    }
+
     // Landing lock: ensure only one drone is landing at a time
     bool landingInProgress = false;
 
