@@ -6,6 +6,15 @@ using UnityEngine.InputSystem;
 
 public class SearchCoordinator : MonoBehaviour
 {
+
+    [Header("Local LLM (Ollama)")]
+    public string ollamaUrl = "http://127.0.0.1:11434/api/chat";
+    public string ollamaModel = "llama3.2:3b-instruct";
+    [Range(0f,1f)] public float acceptConfidence = 0.70f;
+
+    [Header("Mission text (no CV)")]
+    [TextArea(2,6)] public string defaultMissionText = "person with an orange jacket and a yellow construction helmet";
+
     public static SearchCoordinator Instance { get; private set; }
 
     [Header("UI (legacy)")]
@@ -89,6 +98,47 @@ public class SearchCoordinator : MonoBehaviour
         }
     }
 
+    readonly System.Collections.Generic.HashSet<int> _evaluatingPeople = new();
+string _currentMissionText = "";
+
+public void OnPersonProximity(DroneAgent drone, PersonDescriptor person)
+{
+    if (landingInProgress || drone == null || person == null) return;
+    int id = person.GetInstanceID();
+    if (_evaluatingPeople.Contains(id)) return;
+    _evaluatingPeople.Add(id);
+    StartCoroutine(EvaluateAndMaybeLand(drone, person));
+}
+
+System.Collections.IEnumerator EvaluateAndMaybeLand(DroneAgent drone, PersonDescriptor person)
+{
+    bool done=false; OllamaComparer.MatchObj verdict=null; string err=null;
+
+    yield return OllamaComparer.Compare(
+        ollamaUrl, ollamaModel,
+        _currentMissionText, person.description,
+        v => { verdict=v; done=true; },
+        e => { err=e; done=true; }
+    );
+
+    _evaluatingPeople.Remove(person.GetInstanceID());
+    if (!done || verdict == null) { if (!string.IsNullOrEmpty(err)) Debug.LogWarning(err); yield break; }
+
+    Debug.Log($"[LLM] match={verdict.match} conf={verdict.confidence:0.00} person={person.name} reason={verdict.reason}");
+    if (verdict.match && verdict.confidence >= acceptConfidence && !landingInProgress)
+    {
+        landingInProgress = true;
+        var lander = drone.GetComponent<LandingController>();
+        if (lander != null)
+        {
+            StartCoroutine(LandingLock(drone)); // you already have this helper; reuse it
+            drone.BeginLanding(person.transform.position, 1.6f, 2.0f);
+        }
+        else landingInProgress = false;
+    }
+}
+
+
     public void OnStartClicked()
     {
         if (!TryParseInputs(out roiCenter))
@@ -96,6 +146,9 @@ public class SearchCoordinator : MonoBehaviour
             Debug.LogWarning("Invalid coordinates. Please enter numeric X/Y/Z.");
             return;
         }
+
+        _currentMissionText = defaultMissionText;  // or read from a UI field if you have one
+
 
         ringLR.enabled = true;
         UpdateRing(roiCenter, roiRadiusMeters);

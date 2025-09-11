@@ -1,0 +1,122 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &5240321534178775316
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 0b567743e2cf4824d8bb74b2538eedc1, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 1755.5756
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0b567743e2cf4824d8bb74b2538eedc1, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0b567743e2cf4824d8bb74b2538eedc1, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 1283.3274
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0b567743e2cf4824d8bb74b2538eedc1, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.27032536
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0b567743e2cf4824d8bb74b2538eedc1, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0b567743e2cf4824d8bb74b2538eedc1, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.9627691
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0b567743e2cf4824d8bb74b2538eedc1, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0b567743e2cf4824d8bb74b2538eedc1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0b567743e2cf4824d8bb74b2538eedc1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: -148.633
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0b567743e2cf4824d8bb74b2538eedc1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0b567743e2cf4824d8bb74b2538eedc1, type: 3}
+      propertyPath: m_Name
+      value: mujervestidochivas2
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects:
+    - {fileID: 2654713335656134247, guid: 0b567743e2cf4824d8bb74b2538eedc1, type: 3}
+    - {fileID: -8700617353114198275, guid: 0b567743e2cf4824d8bb74b2538eedc1, type: 3}
+    - {fileID: 117214286460000749, guid: 0b567743e2cf4824d8bb74b2538eedc1, type: 3}
+    - {fileID: -2572967989333021709, guid: 0b567743e2cf4824d8bb74b2538eedc1, type: 3}
+    - {fileID: 65702495048144492, guid: 0b567743e2cf4824d8bb74b2538eedc1, type: 3}
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 0b567743e2cf4824d8bb74b2538eedc1, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1182199999793937570}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 0b567743e2cf4824d8bb74b2538eedc1, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8175862103367562207}
+  m_SourcePrefab: {fileID: 100100000, guid: 0b567743e2cf4824d8bb74b2538eedc1, type: 3}
+--- !u!1 &4933752190516030533 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 0b567743e2cf4824d8bb74b2538eedc1, type: 3}
+  m_PrefabInstance: {fileID: 5240321534178775316}
+  m_PrefabAsset: {fileID: 0}
+--- !u!135 &1182199999793937570
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4933752190516030533}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 5
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &8175862103367562207
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4933752190516030533}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 22736babd0a9b974e8fce87b61023720, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PersonDescriptor
+  description: 'Blond woman wearing a red-and-white striped dress with casual bottoms. '
+  tags:
+  - woman
+  - female
+  - chivas
+  - dress
+  - red and white stripes
+  - black boots
+  - casual
+  - blond
+  - pony tail
+  - red lips
+  - walking
+  triggerRadius: 5
