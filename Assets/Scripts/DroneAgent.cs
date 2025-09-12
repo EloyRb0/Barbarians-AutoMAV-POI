@@ -148,12 +148,6 @@ public class DroneAgent : MonoBehaviour
         State = DroneState.Search;  // resume search after demo landing
     }
 
-    public byte[] CaptureJpg(int w = 640, int h = 360, int quality = 60)
-    {
-        if (payloadCam == null) return null;
-        return CameraStreamer.CaptureJPG(payloadCam, w, h, quality);
-    }
-
     void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.cyan;

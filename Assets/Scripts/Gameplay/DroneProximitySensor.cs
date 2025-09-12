@@ -96,7 +96,7 @@ public class DroneProximitySensor : MonoBehaviour
         {
             float gy; GetGround(out gy);
             float altitude = transform.position.y - gy;
-            Debug.Log($"[Sensor] {agent.droneId} touched {person.name} | horizR={horizontalRadius:0.0}m | alt≈{altitude:0.0}m");
+            Debug.Log($"[Sensor] {agent.droneId} detected {person.name} | horizR={horizontalRadius:0.0}m | alt≈{altitude:0.0}m");
             Debug.Log($"[Sensor ▶] mission vs candidate → mission='{SearchCoordinator.Instance?.GetMissionText()}' candidate='{person.description}'");
         }
 
