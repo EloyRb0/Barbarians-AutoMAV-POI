@@ -70,6 +70,13 @@ public class DroneAgent : MonoBehaviour
         StartCoroutine(FlyProfile());
     }
 
+    public void Halt()
+{
+    StopAllCoroutines();           // stop takeoff/transit/search coroutines
+    rb.linearVelocity = Vector3.zero;
+    State = DroneState.Idle;       // Update() won’t tick Search anymore
+}
+
     IEnumerator FlyProfile()
     {
         State = DroneState.Takeoff;
