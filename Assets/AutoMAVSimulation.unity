@@ -150,7 +150,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SearchCoordinator
   ollamaUrl: http://127.0.0.1:11434/api/chat
   ollamaModel: mistral:7b-instruct
-  acceptConfidence: 0.75
+  acceptConfidence: 0.65
   personPrefabs:
   - {fileID: 331701394632645555, guid: 0d71fddb45c0a5043bc3ccdef158889e, type: 3}
   - {fileID: 3564980986461123847, guid: 1c75ce760406cce4fab3eba0269614fe, type: 3}
