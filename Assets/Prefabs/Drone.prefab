@@ -182,12 +182,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LandingController
   preHoverHeight: 3
-  descentSpeed: 0.25
+  descentSpeed: 4
   climbSpeed: 0.8
   lateralSpeed: 3
   keepOutRadius: 1.2
   landTolerance: 0.05
   minSeparation: 2.5
+  nearGroundSlowdownStart: 0.8
+  nearGroundMinFactor: 0.45
   groundMask:
     serializedVersion: 2
     m_Bits: 8

@@ -127,88 +127,98 @@ public class SearchCoordinator : MonoBehaviour
         _evaluatingPeople.Add(id);
         StartCoroutine(EvaluateAndMaybeLand(drone, person));
     }
+System.Collections.IEnumerator EvaluateAndMaybeLand(DroneAgent drone, PersonDescriptor person)
+{
+    bool done = false; 
+    OllamaComparer.MatchObj verdict = null; 
+    string err = null;
 
-    System.Collections.IEnumerator EvaluateAndMaybeLand(DroneAgent drone, PersonDescriptor person)
+    // Query local LLM
+    yield return OllamaComparer.Compare(
+        ollamaUrl, ollamaModel,
+        _currentMissionText, person.description,
+        v => { verdict = v; done = true; },
+        e => { err = e; done = true; },
+        true // verbose logging
+    );
+
+    _evaluatingPeople.Remove(person.GetInstanceID());
+
+    // If mission ended while we waited, ignore results unless this is the winner
+    if (missionEnded && drone != winnerDrone) yield break;
+
+    if (!done || verdict == null)
     {
-        bool done = false; OllamaComparer.MatchObj verdict = null; string err = null;
+        if (!string.IsNullOrEmpty(err)) Debug.LogWarning(err);
+        yield break;
+    }
 
-        yield return OllamaComparer.Compare(
-            ollamaUrl, ollamaModel,
-            _currentMissionText, person.description,
-            v => { verdict = v; done = true; },
-            e => { err = e; done = true; },
-            true // verbose logging ON
-        );
+    Debug.Log($"[LLM] match={verdict.match} conf={verdict.confidence:0.00} person={person.name} reason={verdict.reason}");
 
-        _evaluatingPeople.Remove(person.GetInstanceID());
+    if (verdict.match && verdict.confidence >= acceptConfidence && !landingInProgress)
+    {
+        missionEnded = true;            // stop new evaluations immediately
+        winnerDrone  = drone;
+        MissionHUD.UpdateStatus($"State: Landing near {person.name}…");
+        StopOtherDronesAndSensors(winnerDrone);
 
-        // If mission already ended while we were waiting, ignore results unless we're the winner
-        if (missionEnded && drone != winnerDrone) yield break;
-
-        if (!done || verdict == null)
+        // Start the actual landing via LandingController (NOT DroneAgent)
+        var lander = drone.GetComponent<LandingController>();
+        if (lander != null)
         {
-            if (!string.IsNullOrEmpty(err)) Debug.LogWarning(err);
-            yield break;
-        }
-
-        Debug.Log($"[LLM] match={verdict.match} conf={verdict.confidence:0.00} person={person.name} reason={verdict.reason}");
-
-        if (verdict.match && verdict.confidence >= acceptConfidence && !landingInProgress)
-        {
-            // Commit the mission to this drone and stop the rest.
-            missionEnded = true;
-            winnerDrone = drone;
-            StopOtherDronesAndSensors(winnerDrone);
-
             landingInProgress = true;
-            var lander = drone.GetComponent<LandingController>();
-            if (lander != null)
-            {
-                StartCoroutine(LandingLock(drone)); // wait for touchdown
-                drone.BeginLanding(person.transform.position, 1.6f, 2.0f); // safe ring landing
-            }
-            else
-            {
-                landingInProgress = false; // couldn't land, allow future attempts if needed
-            }
+
+            // Begin landing FIRST…
+            lander.BeginLanding(drone, person.transform.position, 1.6f, 2.0f);
+
+            // …then start the wait loop
+            StartCoroutine(LandingLock(drone));
         }
-    }
-
-    void StopOtherDronesAndSensors(DroneAgent winner)
-    {
-        // Hide the 20 m ring once we commit to a target
-        if (ringLR) ringLR.enabled = false;
-
-        foreach (var d in drones)
+        else
         {
-            if (d == null) continue;
-
-            // Stop proximity sensors (so no new LLM requests are triggered)
-            var sensor = d.GetComponent<DroneProximitySensor>();
-            if (sensor) sensor.enabled = false;
-
-            // Freeze movement on non-winner drones
-            if (d != winner)
-            {
-                // stop any running coroutines inside the drone
-                d.StopAllCoroutines();
-
-                // disable drone logic updates
-                d.enabled = false;
-
-                // zero velocities to hover/stop
-                var rb = d.GetComponent<Rigidbody>();
-                if (rb)
-                {
-                    rb.linearVelocity = Vector3.zero;
-                    rb.angularVelocity = Vector3.zero;
-                }
-
-                // (optional) disable their colliders entirely:
-                // foreach (var col in d.GetComponentsInChildren<Collider>()) col.enabled = false;
-            }
+            Debug.LogWarning("[Landing] No LandingController found on the drone.");
+            landingInProgress = false;
         }
     }
+}
+
+
+void StopOtherDronesAndSensors(DroneAgent winner)
+{
+    // Hide the 20 m ring once we commit to a target
+    if (ringLR) ringLR.enabled = false;
+
+    foreach (var d in drones)
+    {
+        if (d == null) continue;
+
+        // Stop proximity sensors (no new LLM requests)
+        var sensor = d.GetComponent<DroneProximitySensor>();
+        if (sensor) sensor.enabled = false;
+
+        // Freeze movement on non-winner drones
+        if (d != winner)
+        {
+            // stop any running coroutines inside the drone
+            d.StopAllCoroutines();
+
+            // disable drone logic updates
+            d.enabled = false;
+
+            // zero velocities to hover/stop
+            var rb = d.GetComponent<Rigidbody>();
+            if (rb)
+            {
+                rb.linearVelocity = Vector3.zero;        // <-- fix: use velocity (not linearVelocity)
+                rb.angularVelocity = Vector3.zero;
+            }
+
+            // (optional) disable their colliders entirely:
+            // foreach (var col in d.GetComponentsInChildren<Collider>()) col.enabled = false;
+        }
+    }
+}
+
 
     public void OnStartClicked()
     {
@@ -227,6 +237,8 @@ public class SearchCoordinator : MonoBehaviour
         _currentMissionText = (missionInput != null && !string.IsNullOrWhiteSpace(missionInput.text))
         ? missionInput.text.Trim()
         : defaultMissionText;
+
+        MissionHUD.UpdateStatus("State: Searching…");
 
         ringLR.enabled = true;
         UpdateRing(roiCenter, roiRadiusMeters);
@@ -265,19 +277,31 @@ public class SearchCoordinator : MonoBehaviour
 
     void SpawnOneDrone(int idx)
     {
-        if (dronePrefab == null) { Debug.LogError("Assign dronePrefab in Inspector."); return; }
-        float a = idx * Mathf.PI * 2f / Mathf.Max(1, numDrones);
-        Vector3 spawn = new Vector3(
-            roiCenter.x + spawnRing * Mathf.Cos(a),
-            roiCenter.y + 0.5f,
-            roiCenter.z + spawnRing * Mathf.Sin(a)
-        );
-        var go = Instantiate(dronePrefab, spawn, Quaternion.identity);
-        go.name = $"Drone_{idx:D2}";
-        var agent = go.GetComponent<DroneAgent>();
-        if (agent == null) { Debug.LogError("Drone prefab must have a DroneAgent component."); return; }
-        agent.droneId = go.name;
-        drones.Add(agent);
+    if (dronePrefab == null) { Debug.LogError("Assign dronePrefab in Inspector."); return; }
+
+    // Spawn at world origin, but each at a unique altitude to avoid clipping
+    float alt = baseAltitude + altitudeStep * idx;
+    Vector3 spawn = new Vector3(0f, alt, 0f);
+
+    var go = Instantiate(dronePrefab, spawn, Quaternion.identity);
+    go.name = $"Drone_{idx:D2}";
+
+    var agent = go.GetComponent<DroneAgent>();
+    if (agent == null) { Debug.LogError("Drone prefab must have a DroneAgent component."); return; }
+    agent.droneId = go.name;
+
+    // briefly disable their colliders so they don't catch each other on spawn
+    StartCoroutine(TemporarilyDisableColliders(go, 3.0f));
+
+    drones.Add(agent);
+    }
+
+    System.Collections.IEnumerator TemporarilyDisableColliders(GameObject root, float seconds)
+{
+    var cols = root.GetComponentsInChildren<Collider>(true);
+    foreach (var c in cols) c.enabled = false;
+    yield return new WaitForSeconds(seconds);
+    foreach (var c in cols) if (c) c.enabled = true;
     }
 
     bool TryParseInputs(out Vector3 center)
@@ -371,45 +395,76 @@ public class SearchCoordinator : MonoBehaviour
 
     // === DEMO landing trigger ===
     void TryLandingDemo()
+{
+    if (landingInProgress || missionEnded) return;
+    if (drones.Count == 0 || people.Count == 0) return;
+
+    // pick nearest person to ROI center (demo)
+    Transform target = null;
+    float best = float.PositiveInfinity;
+    foreach (var p in people)
     {
-        if (landingInProgress || missionEnded) return;
-        if (drones.Count == 0 || people.Count == 0) return;
-
-        // pick the nearest person to ROI center (demo policy)
-        Transform target = null;
-        float best = float.PositiveInfinity;
-        foreach (var p in people)
-        {
-            float d = Vector3.Distance(new Vector3(p.position.x, 0, p.position.z), new Vector3(roiCenter.x, 0, roiCenter.z));
-            if (d < best) { best = d; target = p; }
-        }
-        if (target == null) return;
-
-        // pick first drone (or choose best by distance); enforce single-landing lock
-        DroneAgent chosen = drones[0];
-
-        missionEnded = true;         // stop further evaluations
-        winnerDrone = chosen;
-        StopOtherDronesAndSensors(winnerDrone);
-
-        landingInProgress = true;
-
-        // subscribe to landing completion via coroutine
-        StartCoroutine(LandingLock(chosen));
-        chosen.BeginLanding(target.position, 1.6f, 2.0f);
+        float d = Vector3.Distance(new Vector3(p.position.x, 0, p.position.z),
+                                   new Vector3(roiCenter.x, 0, roiCenter.z));
+        if (d < best) { best = d; target = p; }
     }
+    if (target == null) return;
+
+    var chosen = drones[0];
+    missionEnded   = true;
+    winnerDrone    = chosen;
+    StopOtherDronesAndSensors(winnerDrone);
+
+    var lander = chosen.GetComponent<LandingController>();
+    if (lander == null) return;
+
+    landingInProgress = true;
+
+    // Begin landing FIRST, then wait
+    lander.BeginLanding(chosen, target.position, 1.6f, 2.0f);
+    StartCoroutine(LandingLock(chosen));
+}
+
 
     System.Collections.IEnumerator LandingLock(DroneAgent d)
     {
-        // wait until its LandingController reports completion
-        var lander = d.GetComponent<LandingController>();
-        while (lander != null && lander.IsInProgress)
-            yield return null;
-
+    var lander = d.GetComponent<LandingController>();
+    if (lander == null)
+    {
         landingInProgress = false;
-        Debug.Log($"[Mission] Complete: {d.name} landed safely near the target.");
-        // keep missionEnded = true so nothing restarts
+        MissionHUD.UpdateStatus("State: Landing failed (no controller)");
+        yield break;
     }
+
+    // Let BeginLanding set up state
+    yield return null;
+
+    // Wait up to 2s for landing to actually start
+    float tStart = Time.time;
+    while (!lander.IsInProgress && Time.time - tStart < 2f)
+        yield return null;
+
+    // Now wait until landing is no longer in progress
+    while (lander.IsInProgress)
+        yield return null;
+
+    landingInProgress = false;
+
+    // Decide based on final state
+    var stateField = lander.State; // LandingController.LState
+    if (stateField == LandingController.LState.Complete)
+    {
+        Debug.Log($"[Mission] Complete: {d.name} landed safely near the target.");
+        MissionHUD.UpdateStatus("State: Mission complete");
+    }
+    else
+    {
+        Debug.LogWarning($"[Mission] Landing aborted by controller. Final state: {stateField}");
+        MissionHUD.UpdateStatus($"State: Landing aborted ({stateField})");
+    }
+    }
+
+
 
     void SpawnAllPeopleOnce()
     {
